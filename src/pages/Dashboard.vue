@@ -6,7 +6,7 @@
         Welcome, {{ authStore.user?.user_metadata?.full_name || 'User' }}
       </h1>
       <p class="text-gray-600">
-        Manage your ITGC audit assessments
+        Manage your ITGC audit engagements
       </p>
     </div>
 
