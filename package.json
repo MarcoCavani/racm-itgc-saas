@@ -1,0 +1,30 @@
+{
+  "name": "racm-itgc-saas",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^1.46.0",
+    "@supabase/supabase-js": "^2.37.0",
+    "axios": "^1.4.0",
+    "date-fns": "^2.30.0",
+    "pinia": "^2.1.4",
+    "stripe": "^13.11.0",
+    "tailwindcss": "^3.3.0",
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.0",
+    "vite": "^8.1.1"
+  }
+}
