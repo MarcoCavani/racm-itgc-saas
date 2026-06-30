@@ -13,9 +13,9 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'stripe': ['@stripe/stripe-js'],
-          'supabase': ['@supabase/supabase-js'],
+        manualChunks(id) {
+          if (id.includes('@stripe/stripe-js')) return 'stripe'
+          if (id.includes('@supabase/supabase-js')) return 'supabase'
         }
       }
     }
