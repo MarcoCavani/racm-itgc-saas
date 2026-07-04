@@ -22,14 +22,6 @@
             >
               Templates
             </router-link>
-            <a
-              href="https://racm-itgc.netlify.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-gray-700 hover:text-blue-600"
-            >
-              RACM Tool ↗
-            </a>
             <router-link
               v-if="!authStore.subscription || authStore.subscription.status !== 'active'"
               to="/upgrade"
