@@ -122,28 +122,61 @@
           />
           <input
             v-model="newTemplate.domain"
-            placeholder="Domain (e.g. Finance)"
+            placeholder="Domain (e.g. IT General Controls)"
             class="px-4 py-2 border border-gray-300 rounded-lg"
           />
-          <input
-            v-model="newTemplate.excel_file_url"
-            placeholder="Excel file URL"
-            class="px-4 py-2 border border-gray-300 rounded-lg"
-          />
-          <input
-            v-model="newTemplate.pdf_file_url"
-            placeholder="PDF file URL"
-            class="px-4 py-2 border border-gray-300 rounded-lg"
-          />
+
+          <!-- Excel file upload -->
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <input
+                v-model="newTemplate.excel_file_url"
+                placeholder="Excel file URL"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+              />
+              <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 whitespace-nowrap">
+                {{ uploadingExcel ? 'Uploading…' : 'Upload .xlsx' }}
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  class="hidden"
+                  :disabled="uploadingExcel"
+                  @change="uploadExcel"
+                />
+              </label>
+            </div>
+            <p v-if="uploadError" class="text-xs text-red-600">{{ uploadError }}</p>
+            <p v-if="uploadingExcel" class="text-xs text-blue-600">Uploading file to storage…</p>
+          </div>
+
+          <!-- PDF file upload -->
+          <div class="flex items-center gap-2">
+            <input
+              v-model="newTemplate.pdf_file_url"
+              placeholder="PDF file URL (optional)"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            />
+            <label class="cursor-pointer bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 whitespace-nowrap">
+              {{ uploadingPdf ? 'Uploading…' : 'Upload .pdf' }}
+              <input
+                type="file"
+                accept=".pdf"
+                class="hidden"
+                :disabled="uploadingPdf"
+                @change="uploadPdf"
+              />
+            </label>
+          </div>
+
           <textarea
             v-model="newTemplate.description"
             placeholder="Description"
-            rows="2"
+            rows="3"
             class="sm:col-span-2 px-4 py-2 border border-gray-300 rounded-lg"
           ></textarea>
           <button
             type="submit"
-            :disabled="creatingTemplate"
+            :disabled="creatingTemplate || uploadingExcel || uploadingPdf"
             class="sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-sm font-medium"
           >
             {{ creatingTemplate ? 'Adding…' : 'Add Template ($10)' }}
@@ -151,13 +184,31 @@
         </form>
       </div>
 
+      <!-- Template list -->
       <div class="bg-white rounded-lg shadow divide-y">
-        <div v-for="t in templates" :key="t.id" class="px-6 py-4 flex justify-between items-center">
-          <div>
-            <p class="font-medium text-gray-900">{{ t.name }}</p>
-            <p class="text-sm text-gray-500">{{ t.domain }}</p>
+        <div v-for="t in templates" :key="t.id" class="px-6 py-4 flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <p class="font-medium text-gray-900">{{ t.name }}</p>
+              <span v-if="t.domain" class="text-xs bg-blue-50 text-blue-600 font-medium px-2 py-0.5 rounded-full">{{ t.domain }}</span>
+            </div>
+            <p v-if="t.description" class="text-sm text-gray-500 line-clamp-2 mb-1">{{ t.description }}</p>
+            <div class="flex gap-3 text-xs text-gray-400 flex-wrap">
+              <a v-if="t.excel_file_url" :href="t.excel_file_url" target="_blank" class="text-blue-500 hover:underline">Excel</a>
+              <a v-if="t.pdf_file_url"   :href="t.pdf_file_url"   target="_blank" class="text-blue-500 hover:underline">PDF</a>
+              <span v-if="!t.excel_file_url && !t.pdf_file_url" class="text-red-400">No file URL set</span>
+            </div>
           </div>
-          <span class="text-gray-700 font-medium">${{ Number(t.price).toFixed(2) }}</span>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="text-gray-700 font-medium">${{ Number(t.price).toFixed(2) }}</span>
+            <button
+              @click="deleteTemplate(t.id)"
+              :disabled="deletingId === t.id"
+              class="text-xs text-red-500 hover:text-red-700 disabled:opacity-40 font-medium"
+            >
+              {{ deletingId === t.id ? 'Deleting…' : 'Delete' }}
+            </button>
+          </div>
         </div>
         <p v-if="templates.length === 0" class="px-6 py-8 text-center text-gray-500">No templates yet.</p>
       </div>
@@ -168,6 +219,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { dbService } from '../services/database'
+import { supabase } from '../services/supabase'
 
 const activeTab = ref('Users')
 const users = ref([])
@@ -177,6 +229,10 @@ const templates = ref([])
 const stats = ref({ total: 0, subscriptionRevenue: 0, templateRevenue: 0, paymentCount: 0 })
 
 const creatingTemplate = ref(false)
+const deletingId = ref(null)
+const uploadingExcel = ref(false)
+const uploadingPdf = ref(false)
+const uploadError = ref('')
 const newTemplate = ref({ name: '', domain: '', description: '', excel_file_url: '', pdf_file_url: '' })
 
 const formatDate = (date) =>
@@ -190,6 +246,40 @@ const loadAll = async () => {
   stats.value = await dbService.getRevenueStats()
 }
 
+const uploadFile = async (file, field, loadingRef) => {
+  uploadError.value = ''
+  loadingRef.value = true
+  try {
+    const ext = file.name.split('.').pop()
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
+    const { error } = await supabase.storage
+      .from('templates')
+      .upload(filename, file, { upsert: true })
+
+    if (error) {
+      uploadError.value = `Upload failed: ${error.message}. Make sure a public "templates" bucket exists in Supabase Storage.`
+      return
+    }
+
+    const { data } = supabase.storage.from('templates').getPublicUrl(filename)
+    newTemplate.value[field] = data.publicUrl
+  } finally {
+    loadingRef.value = false
+  }
+}
+
+const uploadExcel = (e) => {
+  const file = e.target.files[0]
+  if (file) uploadFile(file, 'excel_file_url', uploadingExcel)
+  e.target.value = ''
+}
+
+const uploadPdf = (e) => {
+  const file = e.target.files[0]
+  if (file) uploadFile(file, 'pdf_file_url', uploadingPdf)
+  e.target.value = ''
+}
+
 const createTemplate = async () => {
   creatingTemplate.value = true
   try {
@@ -198,6 +288,17 @@ const createTemplate = async () => {
     templates.value = await dbService.getTemplates()
   } finally {
     creatingTemplate.value = false
+  }
+}
+
+const deleteTemplate = async (id) => {
+  if (!confirm('Delete this template? This cannot be undone.')) return
+  deletingId.value = id
+  try {
+    await supabase.from('templates').delete().eq('id', id)
+    templates.value = templates.value.filter((t) => t.id !== id)
+  } finally {
+    deletingId.value = null
   }
 }
 
