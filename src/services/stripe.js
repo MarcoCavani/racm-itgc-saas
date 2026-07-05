@@ -14,6 +14,7 @@ export const stripeService = {
   // Create checkout session for subscription
   async createSubscriptionCheckout(userId) {
     try {
+      const origin = window.location.origin
       const response = await fetch('/api/create-subscription-checkout', {
         method: 'POST',
         headers: {
@@ -22,8 +23,8 @@ export const stripeService = {
         body: JSON.stringify({
           userId,
           priceId: import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID,
-          successUrl: `${import.meta.env.VITE_APP_URL}/dashboard?subscription=success`,
-          cancelUrl: `${import.meta.env.VITE_APP_URL}/upgrade?subscription=cancelled`,
+          successUrl: `${origin}/dashboard?subscription=success`,
+          cancelUrl: `${origin}/upgrade?subscription=cancelled`,
         }),
       })
 
@@ -43,6 +44,7 @@ export const stripeService = {
   // Create checkout session for template purchase
   async createTemplateCheckout(userId, templateId) {
     try {
+      const origin = window.location.origin
       const response = await fetch('/api/create-template-checkout', {
         method: 'POST',
         headers: {
@@ -52,8 +54,8 @@ export const stripeService = {
           userId,
           templateId,
           priceId: import.meta.env.VITE_STRIPE_TEMPLATE_PRICE_ID,
-          successUrl: `${import.meta.env.VITE_APP_URL}/templates?download=success`,
-          cancelUrl: `${import.meta.env.VITE_APP_URL}/templates?download=cancelled`,
+          successUrl: `${origin}/templates?download=success`,
+          cancelUrl: `${origin}/templates?download=cancelled`,
         }),
       })
 
@@ -80,7 +82,7 @@ export const stripeService = {
         },
         body: JSON.stringify({
           customerId,
-          returnUrl: `${import.meta.env.VITE_APP_URL}/settings`,
+          returnUrl: `${window.location.origin}/settings`,
         }),
       })
 
