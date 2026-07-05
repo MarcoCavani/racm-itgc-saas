@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+const TEMPLATE_PRICE_ID = 'price_1TptI7LRaZReIi1fhY3DFJrA'
 
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -8,12 +9,12 @@ export const handler = async (event) => {
   }
 
   try {
-    const { userId, templateId, priceId, successUrl, cancelUrl } = JSON.parse(event.body)
+    const { userId, templateId, successUrl, cancelUrl } = JSON.parse(event.body)
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: TEMPLATE_PRICE_ID, quantity: 1 }],
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { type: 'template', userId, templateId },
