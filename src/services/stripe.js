@@ -59,7 +59,10 @@ export const stripeService = {
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to create checkout session')
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to create checkout session')
+      }
 
       const { sessionId } = await response.json()
       const stripe = await getStripe()
