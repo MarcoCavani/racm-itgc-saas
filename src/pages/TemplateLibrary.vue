@@ -2,7 +2,8 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Template Library</h1>
-      <p class="text-gray-600">Pre-built ITGC audit templates — $10 each</p>
+      <p class="text-gray-600">Professional ITGC audit templates — <span class="font-semibold text-gray-800">$49 each</span></p>
+      <p class="text-sm text-blue-600 mt-1">Newsletter subscribers get a promo code for $10 at checkout.</p>
     </div>
 
     <div v-if="loading" class="text-center py-20 text-gray-500">Loading templates...</div>
@@ -29,7 +30,10 @@
         </div>
         <div class="px-6 pb-6">
           <div class="flex items-center justify-between">
-            <span class="text-lg font-bold text-gray-900">${{ Number(template.price).toFixed(2) }}</span>
+            <div>
+              <span class="text-lg font-bold text-gray-900">$49.00</span>
+              <p class="text-xs text-blue-600 mt-0.5">$10 with promo code</p>
+            </div>
 
             <button
               v-if="purchasedIds.has(template.id)"
@@ -44,11 +48,27 @@
               :disabled="purchasingId === template.id"
               class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 text-sm font-medium"
             >
-              {{ purchasingId === template.id ? 'Redirecting…' : 'Buy for $10' }}
+              {{ purchasingId === template.id ? 'Redirecting…' : 'Buy for $49' }}
             </button>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Promo callout -->
+    <div class="mt-10 bg-blue-50 border border-blue-200 rounded-xl p-6 flex items-center justify-between gap-6">
+      <div>
+        <p class="font-semibold text-blue-900 mb-1">Get it for $10</p>
+        <p class="text-sm text-blue-700">Subscribe to the MarcoWeb newsletter at <strong>marcoweb.org</strong> to receive your promo code.</p>
+      </div>
+      <a
+        href="https://marcoweb.org"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Get the code →
+      </a>
     </div>
   </div>
 </template>
