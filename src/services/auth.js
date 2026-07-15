@@ -2,12 +2,14 @@ import { supabase, getCurrentUser } from './supabase'
 
 export const authService = {
   // Sign up new user
-  async signup(email, password, fullName) {
+  async signup(email, password, fullName, captchaToken) {
     try {
+      const options = { data: { full_name: fullName } }
+      if (captchaToken) options.captchaToken = captchaToken
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName } },
+        options,
       })
 
       if (error) throw error
@@ -19,11 +21,12 @@ export const authService = {
   },
 
   // Login user
-  async login(email, password) {
+  async login(email, password, captchaToken) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: captchaToken ? { captchaToken } : undefined,
       })
 
       if (error) throw error

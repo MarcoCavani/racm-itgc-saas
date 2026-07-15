@@ -29,11 +29,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Login
-  const login = async (email, password) => {
+  const login = async (email, password, captchaToken) => {
     loading.value = true
     error.value = null
     try {
-      const result = await authService.login(email, password)
+      const result = await authService.login(email, password, captchaToken)
       if (result.success) {
         user.value = result.user
         subscription.value = await dbService.getUserSubscription(result.user.id)
@@ -48,11 +48,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Signup
-  const signup = async (email, password, fullName) => {
+  const signup = async (email, password, fullName, captchaToken) => {
     loading.value = true
     error.value = null
     try {
-      const result = await authService.signup(email, password, fullName)
+      const result = await authService.signup(email, password, fullName, captchaToken)
       if (result.success) {
         user.value = result.user
         return result

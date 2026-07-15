@@ -73,10 +73,20 @@
             />
           </div>
 
+          <!-- Honeypot: off-screen, hidden from people; bots fill it and get silently dropped -->
+          <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+            <label>Leave this field empty
+              <input v-model="hpField" type="text" name="company_website" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+
           <!-- Error message -->
           <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
             {{ error }}
           </div>
+
+          <!-- Bot protection -->
+          <TurnstileWidget ref="captchaEl" @verified="captchaToken = $event" @expired="captchaToken = ''" />
 
           <!-- Submit button -->
           <button
@@ -104,17 +114,25 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import TurnstileWidget from '../components/TurnstileWidget.vue'
 
 const fullName = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const error = ref('')
+const captchaToken = ref('')
+const captchaEl = ref(null)
+const captchaRequired = !!import.meta.env.VITE_TURNSTILE_SITE_KEY
+const hpField = ref('')
 const authStore = useAuthStore()
 const router = useRouter()
 
 const handleSignup = async () => {
   error.value = ''
+
+  // Honeypot — bots fill this hidden field; humans never see it. Silently drop them.
+  if (hpField.value) return
 
   // Validation
   if (!fullName.value || !email.value || !password.value || !confirmPassword.value) {
@@ -132,14 +150,22 @@ const handleSignup = async () => {
     return
   }
 
+  if (captchaRequired && !captchaToken.value) {
+    error.value = 'Please complete the CAPTCHA.'
+    return
+  }
+
   // Sign up
-  const result = await authStore.signup(email.value, password.value, fullName.value)
+  const result = await authStore.signup(email.value, password.value, fullName.value, captchaToken.value)
 
   if (result.success) {
     // Redirect to create first assessment
     router.push('/dashboard')
   } else {
     error.value = result.error || 'Sign up failed'
+    // Tokens are single-use — reset for another attempt
+    captchaToken.value = ''
+    captchaEl.value?.reset()
   }
 }
 </script>
