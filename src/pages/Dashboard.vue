@@ -15,18 +15,23 @@
       <!-- Subscription Status -->
       <div class="bg-white rounded-lg shadow p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-2">
-          Subscription
+          Plan
         </h3>
-        <div v-if="authStore.subscription?.status === 'active'" class="text-green-600 font-bold">
+        <div v-if="authStore.isAdmin" class="text-indigo-600 font-bold">
+          Admin
+        </div>
+        <div v-else-if="authStore.subscription?.status === 'active'" class="text-green-600 font-bold">
           Active
         </div>
         <div v-else class="text-yellow-600 font-bold">
           Free Plan
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          {{ authStore.subscription?.current_period_end
-            ? `Renews: ${formatDate(authStore.subscription.current_period_end)}`
-            : 'Complete 1 free assessment then upgrade'
+          {{ authStore.isAdmin
+            ? 'Unlimited access — no subscription needed'
+            : authStore.subscription?.current_period_end
+              ? `Renews: ${formatDate(authStore.subscription.current_period_end)}`
+              : 'Complete 1 free assessment then upgrade'
           }}
         </p>
       </div>
@@ -40,7 +45,7 @@
           {{ assessments.length }}
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          {{ authStore.canCreateAssessment ? 'Can create new assessment' : 'Upgrade to create more' }}
+          {{ authStore.isAdmin ? 'Unlimited assessments' : (authStore.canCreateAssessment ? 'Can create new assessment' : 'Upgrade to create more') }}
         </p>
       </div>
 
