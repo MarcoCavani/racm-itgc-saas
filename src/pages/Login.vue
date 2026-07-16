@@ -41,6 +41,13 @@
             />
           </div>
 
+          <!-- Forgot password -->
+          <div class="text-right -mt-3">
+            <router-link to="/forgot-password" class="text-sm text-blue-600 hover:text-blue-700">
+              Forgot password?
+            </router-link>
+          </div>
+
           <!-- Error message -->
           <div v-if="formError || authStore.error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
             {{ formError || authStore.error }}

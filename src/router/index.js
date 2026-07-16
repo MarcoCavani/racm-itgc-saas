@@ -10,6 +10,8 @@ const TemplateLibrary = () => import('../pages/TemplateLibrary.vue')
 const Upgrade = () => import('../pages/Upgrade.vue')
 const Settings = () => import('../pages/Settings.vue')
 const AdminDashboard = () => import('../pages/AdminDashboard.vue')
+const ForgotPassword = () => import('../pages/ForgotPassword.vue')
+const ResetPassword = () => import('../pages/ResetPassword.vue')
 const NotFound = () => import('../pages/NotFound.vue')
 
 const routes = [
@@ -29,6 +31,18 @@ const routes = [
     path: '/signup',
     name: 'Signup',
     component: Signup,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword,
     meta: { requiresAuth: false },
   },
   {
