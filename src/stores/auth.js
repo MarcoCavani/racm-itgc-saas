@@ -87,6 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Check if can create assessment
   const canCreateAssessment = computed(() => {
     if (!user.value) return false
+    if (isAdmin.value) return true // Admins: unlimited assessments, no subscription needed
     if (user.value.profile?.assessment_count === 0) return true // First assessment free
     return subscription.value?.status === 'active' // Need subscription for more
   })
